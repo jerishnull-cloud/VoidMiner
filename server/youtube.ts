@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import type { ApiStatus, ChannelInfo, ChannelResponseData, YouTubeVideo } from '../../src/types/youtube';
+import type { ApiStatus, ChannelInfo, ChannelResponseData, YouTubeVideo } from '../src/types/youtube';
 
 const CACHE_TTL_MS = 5 * 60 * 1000;
 
@@ -95,6 +95,7 @@ export function getApiStatus(): ApiStatus & { cached: boolean } {
   const now = Date.now();
 
   return {
+    configured: Boolean(apiKey && channelId),
     hasApiKey: Boolean(apiKey),
     hasChannelId: Boolean(channelId),
     channelId: channelId || 'MISSING_YOUTUBE_CHANNEL_ID',

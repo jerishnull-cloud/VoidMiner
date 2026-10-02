@@ -1,4 +1,4 @@
-import { createApiHandler, fetchYouTubeChannelData, invalidateYouTubeCache } from './_lib';
+import { createApiHandler, fetchYouTubeChannelData, invalidateYouTubeCache } from '../../server/youtube.js';
 
 export default createApiHandler('POST', async () => {
   invalidateYouTubeCache();

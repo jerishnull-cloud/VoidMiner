@@ -72,6 +72,7 @@ export interface ChannelResponseData {
 }
 
 export interface ApiStatus {
+  configured: boolean;
   hasApiKey: boolean;
   hasChannelId: boolean;
   channelId: string;

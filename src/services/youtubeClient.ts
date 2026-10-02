@@ -61,6 +61,7 @@ export async function fetchApiStatus(): Promise<ApiStatus> {
     if (import.meta.env.DEV) console.error('[YouTube API] Status check failed:', error);
   }
   return {
+    configured: false,
     hasApiKey: false,
     hasChannelId: false,
     channelId: 'Loading...',

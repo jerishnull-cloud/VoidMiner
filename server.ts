@@ -2,12 +2,12 @@ import express from 'express';
 import dotenv from 'dotenv';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import channelHandler from './api/youtube/channel';
-import dataHandler from './api/youtube/data';
-import liveHandler from './api/youtube/live';
-import refreshHandler from './api/youtube/refresh';
-import statusHandler from './api/youtube/status';
-import videosHandler from './api/youtube/videos';
+import channelHandler from './api/youtube/channel.js';
+import dataHandler from './api/youtube/data.js';
+import liveHandler from './api/youtube/live.js';
+import refreshHandler from './api/youtube/refresh.js';
+import statusHandler from './api/youtube/status.js';
+import videosHandler from './api/youtube/videos.js';
 
 if (process.env.NODE_ENV !== 'production') dotenv.config();
 

@@ -1,4 +1,4 @@
-import { createApiHandler, fetchYouTubeChannelData, isForceRefresh } from './_lib';
+import { createApiHandler, fetchYouTubeChannelData, isForceRefresh } from '../../server/youtube.js';
 
 export default createApiHandler('GET', async req => {
   const data = await fetchYouTubeChannelData(isForceRefresh(req));
