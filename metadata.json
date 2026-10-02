@@ -1,0 +1,6 @@
+{
+  "name": "VOID miner — Official Gaming Channel",
+  "description": "Official website for gaming creator VOID miner. Watch latest Minecraft challenges, survival videos, YouTube Shorts, and live streams with live stats.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
