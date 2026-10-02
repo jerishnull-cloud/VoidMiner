@@ -1,5 +1,7 @@
 import { ChannelInfo, ChannelResponseData, YouTubeVideo } from '../types/youtube';
 
+export const WHATSAPP_CHANNEL_URL = 'https://whatsapp.com/channel/0029Vb8aYFHICVfsB3jM2A3n';
+
 export const CHANNEL_CONFIG = {
   name: 'VOID miner',
   title: 'VOID miner — Official Gaming Channel',
@@ -18,6 +20,7 @@ export const CHANNEL_CONFIG = {
     twitter: 'https://x.com/voidminer_yt',
     instagram: 'https://www.instagram.com/void.miner/',
     twitch: 'https://twitch.tv/voidminer',
+    whatsapp: WHATSAPP_CHANNEL_URL,
   },
 
   // Focus topics

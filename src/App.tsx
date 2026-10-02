@@ -7,6 +7,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { ChannelStats } from './components/ChannelStats';
+import { WhatsAppChannelSection } from './components/WhatsAppChannelSection';
 import { FeaturedVideo } from './components/FeaturedVideo';
 import { ContentFeed } from './components/ContentFeed';
 import { AboutSection } from './components/AboutSection';
@@ -176,6 +177,9 @@ export default function App() {
 
           {/* Real-time Statistics HUD */}
           <ChannelStats stats={data?.stats || fallbackStats} isLiveApi={data?.isLiveApi || false} />
+
+          {/* Official WhatsApp Channel */}
+          <WhatsAppChannelSection />
 
           {/* Featured Premiere Video (Shown on Home/All) */}
           {(activeTab === 'all' || activeTab === 'home') && data?.featuredVideo && (

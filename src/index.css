@@ -312,6 +312,45 @@
   to { transform: translate3d(1%, -1%, 0) scale(1.22); }
 }
 
+@keyframes whatsappPixelFloat {
+  0%, 100% { transform: translate3d(0, 0, 0); opacity: 0.22; }
+  50% { transform: translate3d(0, -8px, 0); opacity: 0.48; }
+}
+
+.whatsapp-pixel {
+  position: absolute;
+  width: 0.55rem;
+  height: 0.55rem;
+  border: 1px solid rgba(168, 50, 255, 0.38);
+  background: rgba(123, 25, 255, 0.09);
+  box-shadow: 0 0 12px rgba(168, 50, 255, 0.16);
+  pointer-events: none;
+  animation: whatsappPixelFloat 7s ease-in-out infinite;
+}
+
+.whatsapp-pixel-one {
+  top: 18%;
+  right: 8%;
+}
+
+.whatsapp-pixel-two {
+  bottom: 18%;
+  right: 20%;
+  width: 0.38rem;
+  height: 0.38rem;
+  animation-delay: -2.2s;
+}
+
+.whatsapp-pixel-three {
+  bottom: 26%;
+  left: 7%;
+  width: 0.32rem;
+  height: 0.32rem;
+  border-color: rgba(255, 77, 125, 0.32);
+  background: rgba(219, 39, 119, 0.08);
+  animation-delay: -4.3s;
+}
+
 @keyframes ambientGlow {
   from { translate: 0 0; }
   to { translate: 0 -10px; }
@@ -466,8 +505,10 @@
 
   .void-miner-glow,
   .floating-cube,
-  .bg-particle {
+  .bg-particle,
+  .whatsapp-pixel {
     translate: 0 0;
     transition: none;
+    animation: none;
   }
 }
