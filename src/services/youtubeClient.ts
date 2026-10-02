@@ -1,70 +1,22 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { ChannelResponseData, ApiStatus } from '../types/youtube';
 
-export async function fetchChannelInfo(force = false) {
-  const res = await fetch(`/api/youtube/channel${force ? '?force=true' : ''}`);
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
-    throw new Error(err.error || `Failed to fetch channel info (HTTP ${res.status})`);
+async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
+  const response = await fetch(url, init);
+  const body = await response.json().catch(() => null) as { error?: string } | null;
+  if (!response.ok) {
+    throw new Error(body?.error || `Request failed with HTTP ${response.status}`);
   }
-  return await res.json();
-}
-
-export async function fetchVideosList(force = false) {
-  const res = await fetch(`/api/youtube/videos${force ? '?force=true' : ''}`);
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
-    throw new Error(err.error || `Failed to fetch videos (HTTP ${res.status})`);
-  }
-  return await res.json();
-}
-
-export async function fetchLiveStatus(force = false) {
-  const res = await fetch(`/api/youtube/live${force ? '?force=true' : ''}`);
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
-    throw new Error(err.error || `Failed to fetch live status (HTTP ${res.status})`);
-  }
-  return await res.json();
+  if (body === null) throw new Error(`API returned invalid JSON for ${url}`);
+  return body as T;
 }
 
 export async function fetchYouTubeData(force = false): Promise<ChannelResponseData> {
   try {
-    // Request API routes
-    const [channelRes, videosRes, liveRes] = await Promise.all([
-      fetchChannelInfo(force),
-      fetchVideosList(force),
-      fetchLiveStatus(force),
-    ]);
-
-    const channel = channelRes.channel;
-    const stats = channelRes.stats;
-    const videos = videosRes.videos || [];
-    const shorts = videosRes.shorts || [];
-    const featuredVideo = videosRes.featuredVideo || (videos.length > 0 ? videos[0] : null);
-    const liveStatus = liveRes || { isCurrentlyLive: false, recentLiveVideos: [] };
-
-    return {
-      channel,
-      stats: {
-        subscribers: stats.subscribers,
-        subscribersFormatted: stats.subscribersFormatted || stats.subscribers.toString(),
-        totalViews: stats.totalViews,
-        totalViewsFormatted: stats.totalViewsFormatted || stats.totalViews.toString(),
-        videoCount: stats.videoCount,
-        shortsCount: shorts.length,
-        liveCount: liveStatus.recentLiveVideos?.length || 0,
-        lastUpdated: channelRes.lastSynced || new Date().toLocaleTimeString(),
-      },
-      featuredVideo,
-      videos,
-      shorts,
-      liveStatus,
-      isLiveApi: true,
-      lastSynced: channelRes.lastSynced || new Date().toLocaleTimeString(),
-    };
-  } catch (err: any) {
-    console.error('fetchYouTubeData error:', err);
+    return await fetchJson<ChannelResponseData>(`/api/youtube/data${force ? '?force=true' : ''}`);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unable to connect to YouTube Data API';
+    if (import.meta.env.DEV) console.error('[YouTube API] Failed to load channel data:', error);
     return {
       channel: {
         id: '',
@@ -97,19 +49,16 @@ export async function fetchYouTubeData(force = false): Promise<ChannelResponseDa
       },
       isLiveApi: false,
       lastSynced: new Date().toLocaleTimeString(),
-      error: err.message || 'Unable to connect to YouTube Data API',
+      error: message,
     };
   }
 }
 
 export async function fetchApiStatus(): Promise<ApiStatus> {
   try {
-    const res = await fetch('/api/youtube/status');
-    if (res.ok) {
-      return await res.json();
-    }
-  } catch (err) {
-    console.warn('Status check failed:', err);
+    return await fetchJson<ApiStatus>('/api/youtube/status');
+  } catch (error) {
+    if (import.meta.env.DEV) console.error('[YouTube API] Status check failed:', error);
   }
   return {
     hasApiKey: false,
@@ -123,35 +72,10 @@ export async function fetchApiStatus(): Promise<ApiStatus> {
 }
 
 export async function triggerManualRefresh(): Promise<ChannelResponseData> {
-  try {
-    const res = await fetch('/api/youtube/refresh', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-    });
-    if (res.ok) {
-      return fetchYouTubeData(true);
-    }
-  } catch (err) {
-    console.error('Manual refresh failed:', err);
-  }
-  return fetchYouTubeData(true);
-}
-
-export async function updateRuntimeConfig(apiKey: string, channelId: string): Promise<{ success: boolean; isLiveApi: boolean; error?: string }> {
-  try {
-    const res = await fetch('/api/youtube/refresh', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ apiKey, channelId }),
-    });
-    if (res.ok) {
-      return { success: true, isLiveApi: true };
-    }
-    const err = await res.json().catch(() => ({ error: 'Failed to update' }));
-    return { success: false, isLiveApi: false, error: err.error };
-  } catch (err: any) {
-    return { success: false, isLiveApi: false, error: err.message };
-  }
+  const response = await fetchJson<{ data: ChannelResponseData }>('/api/youtube/refresh', {
+    method: 'POST',
+  });
+  return response.data;
 }
 
 export function useYouTubeData() {
