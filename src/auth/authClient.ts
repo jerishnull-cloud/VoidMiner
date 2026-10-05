@@ -69,7 +69,7 @@ export async function createAccount(username: string, email: string, password: s
 
 export async function requestPasswordReset(email: string): Promise<void> {
   const { error } = await createClient().auth.resetPasswordForEmail(email, {
-    redirectTo: `${window.location.origin}/forgot-password?reset=1`,
+    redirectTo: `${window.location.origin}/reset-password`,
   });
 
   if (error) throw error;

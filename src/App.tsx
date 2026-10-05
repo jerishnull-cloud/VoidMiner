@@ -323,6 +323,7 @@ export default function App() {
         <Route path="/login" element={<LoginRoute />} />
         <Route path="/register" element={<AuthPages path="/register" />} />
         <Route path="/forgot-password" element={<AuthPages path="/forgot-password" />} />
+        <Route path="/reset-password" element={<AuthPages path="/reset-password" />} />
         <Route path="/login-success" element={<LoginSuccessRoute />} />
         <Route path="/account" element={<AuthPages path="/account" />} />
         <Route path="*" element={<UnknownRoute />} />

@@ -355,27 +355,17 @@ function RegisterPage() {
 }
 
 function ForgotPasswordPage() {
-  const navigate = useNavigate();
-  const location = useLocation();
   const [email, setEmail] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
-  const resettingPassword = new URLSearchParams(location.search).get('reset') === '1';
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
     const errors: FieldErrors = {};
-    if (resettingPassword) {
-      if (newPassword.length < 8) errors.newPassword = 'Password must contain at least 8 characters';
-      if (confirmPassword !== newPassword) errors.confirmPassword = 'Passwords do not match';
-    } else {
-      const emailError = validateEmail(email);
-      if (emailError) errors.email = emailError;
-    }
+    const emailError = validateEmail(email);
+    if (emailError) errors.email = emailError;
     setFieldErrors(errors);
     setError('');
     setSuccess('');
@@ -383,14 +373,9 @@ function ForgotPasswordPage() {
 
     setLoading(true);
     try {
-      if (resettingPassword) {
-        await updatePassword(newPassword);
-        navigate('/login');
-      } else {
-        await requestPasswordReset(email.trim());
-        setSuccess('If an account exists for that email, reset instructions will be sent.');
-        setLoading(false);
-      }
+      await requestPasswordReset(email.trim());
+      setSuccess('If an account exists for that email, reset instructions will be sent.');
+      setLoading(false);
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : 'Unable to complete the password reset.');
       setLoading(false);
@@ -401,24 +386,101 @@ function ForgotPasswordPage() {
     <AuthShell>
       <AuthCard
         eyebrow="RECOVER YOUR ACCESS"
-        title={resettingPassword ? 'CHOOSE A NEW PASSWORD' : 'RESET PASSWORD'}
-        subtitle={resettingPassword ? 'Set a new password for your VOID account.' : 'We will send secure reset instructions to your email.'}
+        title="RESET PASSWORD"
+        subtitle="We will send secure reset instructions to your email."
         compact
       >
         <form className="auth-form" onSubmit={submit} noValidate>
-          {resettingPassword ? (
-            <>
-              <Field id="newPassword" label="NEW PASSWORD" type="password" placeholder="At least 8 characters" value={newPassword} onChange={setNewPassword} error={fieldErrors.newPassword} icon={<LockKeyhole size={17} />} autoComplete="new-password" />
-              <Field id="confirmPassword" label="CONFIRM PASSWORD" type="password" placeholder="Enter your password again" value={confirmPassword} onChange={setConfirmPassword} error={fieldErrors.confirmPassword} icon={<LockKeyhole size={17} />} autoComplete="new-password" />
-            </>
-          ) : (
-            <Field id="email" label="EMAIL ADDRESS" placeholder="Enter your email" value={email} onChange={setEmail} error={fieldErrors.email} icon={<Mail size={17} />} autoComplete="email" />
-          )}
+          <Field id="email" label="EMAIL ADDRESS" placeholder="Enter your email" value={email} onChange={setEmail} error={fieldErrors.email} icon={<Mail size={17} />} autoComplete="email" />
           <FormNotice message={error} />
           <FormNotice message={success} success />
-          <AuthButton loading={loading}>{resettingPassword ? 'UPDATE PASSWORD' : 'SEND RESET LINK'}</AuthButton>
+          <AuthButton loading={loading}>SEND RESET LINK</AuthButton>
         </form>
         <p className="auth-switch auth-back"><Link to="/login"><ArrowLeft size={15} /> BACK TO SIGN IN</Link></p>
+      </AuthCard>
+    </AuthShell>
+  );
+}
+
+function ResetPasswordPage() {
+  const navigate = useNavigate();
+  const { session, loading: sessionLoading } = useAuth();
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+
+  const submit = async (event: FormEvent) => {
+    event.preventDefault();
+    const errors: FieldErrors = {};
+    if (newPassword.length < 8) errors.newPassword = 'Password must contain at least 8 characters';
+    if (confirmPassword !== newPassword) errors.confirmPassword = 'Passwords do not match';
+    setFieldErrors(errors);
+    setError('');
+    if (Object.keys(errors).length) return;
+
+    setLoading(true);
+    try {
+      await updatePassword(newPassword);
+      setSuccess('Password updated successfully');
+      try {
+        await signOut();
+      } catch (signOutError) {
+        const reason = signOutError instanceof Error ? `: ${signOutError.message}` : '';
+        setError(`Your password was updated, but we could not end your recovery session${reason}`);
+      }
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : 'Unable to update your password.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (sessionLoading) {
+    return <AuthShell><div className="auth-loading"><span className="auth-spinner" /> Verifying your recovery session</div></AuthShell>;
+  }
+
+  if (!session && !success) {
+    return (
+      <AuthShell>
+        <AuthCard
+          eyebrow="RECOVER YOUR ACCESS"
+          title="RESET LINK UNAVAILABLE"
+          subtitle="This password reset link is invalid or has expired. Request a new link to continue."
+          compact
+        >
+          <p className="auth-switch"><Link to="/forgot-password">REQUEST A NEW RESET LINK</Link></p>
+        </AuthCard>
+      </AuthShell>
+    );
+  }
+
+  return (
+    <AuthShell>
+      <AuthCard
+        eyebrow="RECOVER YOUR ACCESS"
+        title="Create New Password"
+        subtitle="Set a new password for your VOID account."
+        compact
+      >
+        {success ? (
+          <>
+            <FormNotice message={success} success />
+            <FormNotice message={error} />
+            <button className="auth-submit" type="button" onClick={() => navigate('/login', { replace: true })}>
+              CONTINUE TO LOGIN
+            </button>
+          </>
+        ) : (
+          <form className="auth-form" onSubmit={submit} noValidate>
+            <Field id="newPassword" label="NEW PASSWORD" type="password" placeholder="At least 8 characters" value={newPassword} onChange={setNewPassword} error={fieldErrors.newPassword} icon={<LockKeyhole size={17} />} autoComplete="new-password" />
+            <Field id="confirmPassword" label="CONFIRM PASSWORD" type="password" placeholder="Enter your password again" value={confirmPassword} onChange={setConfirmPassword} error={fieldErrors.confirmPassword} icon={<LockKeyhole size={17} />} autoComplete="new-password" />
+            <FormNotice message={error} />
+            <AuthButton loading={loading}>UPDATE PASSWORD</AuthButton>
+          </form>
+        )}
       </AuthCard>
     </AuthShell>
   );
@@ -531,6 +593,7 @@ function LoginSuccessPage() {
 export function AuthPages({ path }: { path: string }) {
   if (path === '/register') return <RegisterPage />;
   if (path === '/forgot-password') return <ForgotPasswordPage />;
+  if (path === '/reset-password') return <ResetPasswordPage />;
   if (path === '/account') return <AccountPage />;
   if (path === '/login-success') return <LoginSuccessPage />;
   return <LoginPage />;
