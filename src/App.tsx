@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { Suspense, lazy, useEffect, useRef, useState } from 'react';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { ChannelStats } from './components/ChannelStats';
@@ -16,8 +16,34 @@ import { VideoModal } from './components/VideoModal';
 import { useYouTubeData } from './services/youtubeClient';
 import { YouTubeVideo } from './types/youtube';
 import { BellRing } from 'lucide-react';
+import { Route, Routes, useNavigate } from 'react-router-dom';
+import { useAuth } from './auth/AuthProvider';
 
-export default function App() {
+const AuthPages = lazy(() => import('./auth/AuthPages').then(module => ({ default: module.AuthPages })));
+
+function AuthLoadingScreen() {
+  return (
+    <main
+      style={{
+        display: 'grid',
+        minHeight: '100vh',
+        placeItems: 'center',
+        background: '#050507',
+        color: '#fff',
+        fontFamily: 'Rajdhani, sans-serif',
+        letterSpacing: '0.08em',
+        textAlign: 'center',
+      }}
+    >
+      <div>
+        <div style={{ fontSize: '1.1rem', opacity: 0.72, marginBottom: '0.4rem' }}>ENTERING THE VOID...</div>
+        <div style={{ fontSize: '0.75rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: '#bb80ff' }}>Authenticating...</div>
+      </div>
+    </main>
+  );
+}
+
+function HomePage() {
   const backgroundRef = useRef<HTMLDivElement>(null);
   const {
     data,
@@ -211,5 +237,96 @@ export default function App() {
       {/* Video Cinema Embed Modal */}
       <VideoModal video={selectedVideo} onClose={() => setSelectedVideo(null)} />
     </div>
+  );
+}
+
+function HomeRoute() {
+  const { session, loading } = useAuth();
+  const navigate = useNavigate();
+
+  React.useEffect(() => {
+    if (!loading && !session) {
+      navigate('/login', { replace: true });
+    }
+  }, [loading, Boolean(session), navigate]);
+
+  return loading || !session ? <AuthLoadingScreen /> : <HomePage />;
+}
+
+function LoginRoute() {
+  const { session, loading } = useAuth();
+  const navigate = useNavigate();
+  const initialCheckComplete = useRef(false);
+  const initiallyAuthenticated = useRef(false);
+
+  React.useEffect(() => {
+    if (loading) return;
+    if (!initialCheckComplete.current) {
+      initialCheckComplete.current = true;
+      initiallyAuthenticated.current = Boolean(session);
+    }
+    if (initiallyAuthenticated.current && session) {
+      if (import.meta.env.DEV) console.log('[AUTH] Redirecting to home');
+      navigate('/', { replace: true });
+    }
+  }, [loading, Boolean(session), navigate]);
+
+  if (loading || session) return <AuthLoadingScreen />;
+  return <AuthPages path="/login" />;
+}
+
+function LoginSuccessRoute() {
+  const { session, loading } = useAuth();
+  const navigate = useNavigate();
+
+  React.useEffect(() => {
+    if (loading) return;
+    if (!session) {
+      navigate('/login', { replace: true });
+      return;
+    }
+
+    if (import.meta.env.DEV) console.log('[AUTH] Redirecting to home');
+    const timeout = window.setTimeout(() => navigate('/', { replace: true }), 2000);
+    return () => window.clearTimeout(timeout);
+  }, [loading, Boolean(session), navigate]);
+
+  if (loading || !session) return <AuthLoadingScreen />;
+  return <AuthPages path="/login-success" />;
+}
+
+function UnknownRoute() {
+  const navigate = useNavigate();
+
+  React.useEffect(() => {
+    navigate('/', { replace: true });
+  }, [navigate]);
+
+  return <AuthLoadingScreen />;
+}
+
+export default function App() {
+  const { loading, session } = useAuth();
+
+  React.useEffect(() => {
+    if (import.meta.env.DEV) {
+      console.log('[AUTH] loading:', loading);
+      console.log('[AUTH] session:', Boolean(session));
+      console.log('[AUTH] route:', window.location.pathname);
+    }
+  }, [loading, Boolean(session)]);
+
+  return (
+    <Suspense fallback={<AuthLoadingScreen />}>
+      <Routes>
+        <Route path="/" element={<HomeRoute />} />
+        <Route path="/login" element={<LoginRoute />} />
+        <Route path="/register" element={<AuthPages path="/register" />} />
+        <Route path="/forgot-password" element={<AuthPages path="/forgot-password" />} />
+        <Route path="/login-success" element={<LoginSuccessRoute />} />
+        <Route path="/account" element={<AuthPages path="/account" />} />
+        <Route path="*" element={<UnknownRoute />} />
+      </Routes>
+    </Suspense>
   );
 }

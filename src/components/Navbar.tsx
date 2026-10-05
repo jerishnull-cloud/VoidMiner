@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Play, 
   Tv, 
@@ -9,12 +9,18 @@ import {
   X, 
   RefreshCw, 
   ExternalLink,
-  Sparkles,
   MessageSquare,
-  Instagram
+  Instagram,
+  ChevronDown,
+  LogOut,
+  Settings,
+  UserRound,
 } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import { CHANNEL_CONFIG } from '../config/channelConfig';
 import { Logo } from './Logo';
+import { useAuth } from '../auth/AuthProvider';
+import { signOut } from '../auth/authClient';
 
 interface NavbarProps {
   activeTab: string;
@@ -22,6 +28,142 @@ interface NavbarProps {
   isLive: boolean;
   refreshing: boolean;
   onRefresh: () => void;
+}
+
+function UserProfileMenu() {
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState(false);
+  const [avatarFailed, setAvatarFailed] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const [logoutError, setLogoutError] = useState('');
+
+  const metadata = user?.user_metadata ?? {};
+  const fullName = typeof metadata.full_name === 'string' ? metadata.full_name.trim() : '';
+  const metadataName = typeof metadata.name === 'string' ? metadata.name.trim() : '';
+  const email = user?.email ?? '';
+  const displayName = fullName || metadataName || email.split('@')[0] || 'VOID Miner';
+  const avatarUrl = typeof metadata.avatar_url === 'string' && metadata.avatar_url
+    ? metadata.avatar_url
+    : null;
+  const initials = displayName
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map(part => part[0].toUpperCase())
+    .join('') || 'V';
+
+  useEffect(() => {
+    setAvatarFailed(false);
+  }, [user?.id, avatarUrl]);
+
+  useEffect(() => {
+    const handlePointerDown = (event: PointerEvent) => {
+      if (event.target instanceof Node && !menuRef.current?.contains(event.target)) {
+        setOpen(false);
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpen(false);
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  const logout = async () => {
+    setLoggingOut(true);
+    setLogoutError('');
+    try {
+      await signOut();
+      setOpen(false);
+      navigate('/login', { replace: true });
+    } catch (error) {
+      setLogoutError(error instanceof Error ? error.message : 'Unable to log out. Please try again.');
+      setLoggingOut(false);
+    }
+  };
+
+  if (loading) return null;
+
+  if (!user) {
+    return (
+      <Link className="navbar-login-button" to="/login">
+        LOGIN
+      </Link>
+    );
+  }
+
+  return (
+    <div className="navbar-profile" ref={menuRef}>
+      <button
+        type="button"
+        className="navbar-profile-trigger"
+        aria-label={`User profile: ${displayName}`}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        onClick={() => setOpen(current => !current)}
+      >
+        <span className="navbar-profile-avatar" aria-hidden="true">
+          {avatarUrl && !avatarFailed
+            ? <img src={avatarUrl} alt="" onError={() => setAvatarFailed(true)} />
+            : <span>{initials}</span>}
+        </span>
+        <span className="navbar-profile-name">{displayName}</span>
+        <ChevronDown size={15} className={`navbar-profile-chevron${open ? ' is-open' : ''}`} />
+      </button>
+
+      <div className="navbar-profile-dropdown" role="menu" data-open={open} aria-hidden={!open}>
+        <div className="navbar-profile-summary">
+          <span className="navbar-profile-avatar navbar-profile-avatar-large" aria-hidden="true">
+            {avatarUrl && !avatarFailed
+              ? <img src={avatarUrl} alt="" onError={() => setAvatarFailed(true)} />
+              : <span>{initials}</span>}
+          </span>
+          <span className="navbar-profile-identity">
+            <strong>{displayName}</strong>
+            <span>{email}</span>
+          </span>
+        </div>
+        <div className="navbar-profile-divider" />
+        <button
+          type="button"
+          className="navbar-profile-item"
+          role="menuitem"
+          onClick={() => { setOpen(false); navigate('/account'); }}
+        >
+          <UserRound size={16} />
+          <span>My Profile</span>
+        </button>
+        <button
+          type="button"
+          className="navbar-profile-item"
+          role="menuitem"
+          onClick={() => { setOpen(false); navigate('/account'); }}
+        >
+          <Settings size={16} />
+          <span>Account Settings</span>
+        </button>
+        <div className="navbar-profile-divider" />
+        {logoutError && <p className="navbar-profile-error" role="alert">{logoutError}</p>}
+        <button
+          type="button"
+          className="navbar-profile-item navbar-profile-logout"
+          role="menuitem"
+          onClick={() => { void logout(); }}
+          disabled={loggingOut}
+        >
+          <LogOut size={16} />
+          <span>{loggingOut ? 'Logging out…' : 'Logout'}</span>
+        </button>
+      </div>
+    </div>
+  );
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -135,58 +277,62 @@ export const Navbar: React.FC<NavbarProps> = ({
             })}
           </nav>
 
-          {/* Right Controls: Sync button, Settings HUD, and YouTube Subscribe button */}
-          <div className="hidden sm:flex items-center gap-3">
-            {/* Sync / Refresh Button */}
-            <button
-              onClick={onRefresh}
-              disabled={refreshing}
-              title="Refresh / Sync latest YouTube uploads"
-              aria-label="Refresh YouTube uploads"
-              className="p-2.5 rounded-xl bg-[#12001F]/80 border border-[#B026FF]/30 text-purple-200 hover:text-white hover:border-[#B026FF] hover:bg-[#7B00FF]/20 transition-all duration-200 relative group"
-            >
-              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin text-[#B026FF]' : 'group-hover:rotate-180 transition-transform duration-500'}`} />
-              <span className="sr-only">Refresh content</span>
-            </button>
+          {/* Right Controls: Sync button, Settings HUD, YouTube, and user profile */}
+          <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3">
+            <div className="hidden sm:flex items-center gap-3">
+              {/* Sync / Refresh Button */}
+              <button
+                onClick={onRefresh}
+                disabled={refreshing}
+                title="Refresh / Sync latest YouTube uploads"
+                aria-label="Refresh YouTube uploads"
+                className="p-2.5 rounded-xl bg-[#12001F]/80 border border-[#B026FF]/30 text-purple-200 hover:text-white hover:border-[#B026FF] hover:bg-[#7B00FF]/20 transition-all duration-200 relative group"
+              >
+                <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin text-[#B026FF]' : 'group-hover:rotate-180 transition-transform duration-500'}`} />
+                <span className="sr-only">Refresh content</span>
+              </button>
 
-            {/* Discord Community Link */}
-            <a
-              href={CHANNEL_CONFIG.socials.discord}
-              target="_blank"
-              rel="noopener noreferrer"
-              title="Join Discord Community"
-              className="p-2.5 rounded-xl bg-[#12001F]/80 border border-[#5865F2]/40 text-[#8891f2] hover:text-white hover:border-[#5865F2] hover:bg-[#5865F2]/20 transition-all duration-200 hidden lg:flex items-center justify-center"
-            >
-              <MessageSquare className="w-4 h-4" />
-              <span className="sr-only">Discord</span>
-            </a>
+              {/* Discord Community Link */}
+              <a
+                href={CHANNEL_CONFIG.socials.discord}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Join Discord Community"
+                className="p-2.5 rounded-xl bg-[#12001F]/80 border border-[#5865F2]/40 text-[#8891f2] hover:text-white hover:border-[#5865F2] hover:bg-[#5865F2]/20 transition-all duration-200 hidden lg:flex items-center justify-center"
+              >
+                <MessageSquare className="w-4 h-4" />
+                <span className="sr-only">Discord</span>
+              </a>
 
-            {/* Instagram Link */}
-            <a
-              href={CHANNEL_CONFIG.socials.instagram}
-              target="_blank"
-              rel="noopener noreferrer"
-              title="Follow Instagram"
-              className="p-2.5 rounded-xl bg-[#12001F]/80 border border-pink-500/40 text-pink-400 hover:text-white hover:border-pink-500 hover:bg-pink-500/20 transition-all duration-200 hidden lg:flex items-center justify-center"
-            >
-              <Instagram className="w-4 h-4" />
-              <span className="sr-only">Instagram</span>
-            </a>
+              {/* Instagram Link */}
+              <a
+                href={CHANNEL_CONFIG.socials.instagram}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Follow Instagram"
+                className="p-2.5 rounded-xl bg-[#12001F]/80 border border-pink-500/40 text-pink-400 hover:text-white hover:border-pink-500 hover:bg-pink-500/20 transition-all duration-200 hidden lg:flex items-center justify-center"
+              >
+                <Instagram className="w-4 h-4" />
+                <span className="sr-only">Instagram</span>
+              </a>
 
-            {/* Watch / Subscribe on YouTube Button */}
-            <a
-              href={CHANNEL_CONFIG.socials.youtube}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="relative group overflow-hidden px-5 py-2.5 rounded-xl font-heading font-bold text-sm tracking-wide text-white flex items-center gap-2 bg-gradient-to-r from-red-600 to-[#B026FF] hover:from-red-500 hover:to-[#D9B3FF] shadow-[0_0_20px_rgba(239,68,68,0.35)] hover:shadow-[0_0_25px_rgba(176,38,255,0.6)] transition-all duration-300 active:scale-95"
-            >
-              <span className="absolute inset-0 w-full h-full bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-              <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-              </svg>
-              <span>YOUTUBE</span>
-              <ExternalLink className="w-3.5 h-3.5 opacity-80" />
-            </a>
+              {/* Watch / Subscribe on YouTube Button */}
+              <a
+                href={CHANNEL_CONFIG.socials.youtube}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="relative group overflow-hidden px-5 py-2.5 rounded-xl font-heading font-bold text-sm tracking-wide text-white flex items-center gap-2 bg-gradient-to-r from-red-600 to-[#B026FF] hover:from-red-500 hover:to-[#D9B3FF] shadow-[0_0_20px_rgba(239,68,68,0.35)] hover:shadow-[0_0_25px_rgba(176,38,255,0.6)] transition-all duration-300 active:scale-95"
+              >
+                <span className="absolute inset-0 w-full h-full bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                  <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                </svg>
+                <span>YOUTUBE</span>
+                <ExternalLink className="w-3.5 h-3.5 opacity-80" />
+              </a>
+            </div>
+
+            <UserProfileMenu />
           </div>
 
           {/* Mobile Menu Button */}
