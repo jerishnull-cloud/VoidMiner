@@ -1,9 +1,21 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import {defineConfig} from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 
-export default defineConfig(() => {
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), 'VITE_');
+  const missingAuthConfig = [
+    'VITE_SUPABASE_URL',
+    'VITE_SUPABASE_PUBLISHABLE_KEY',
+  ].filter(name => !env[name]?.trim());
+
+  if (missingAuthConfig.length > 0) {
+    throw new Error(
+      `Missing required Vite environment variable${missingAuthConfig.length === 1 ? '' : 's'}: ${missingAuthConfig.join(', ')}`,
+    );
+  }
+
   return {
     plugins: [react(), tailwindcss()],
     resolve: {

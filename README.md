@@ -42,15 +42,18 @@ Import the repository in Vercel and use these project settings:
 - Build command: `npm run build`
 - Output directory: `dist`
 
-Add these server-side environment variables in **Project Settings → Environment Variables**. Apply them to each environment you deploy (Production, Preview, and Development as needed):
+Add the server-only environment variables in **Project Settings → Environment Variables**. Apply them to each environment you deploy (Production, Preview, and Development as needed):
 
 - `YOUTUBE_API_KEY` — Google API key with YouTube Data API v3 enabled
 - `YOUTUBE_CHANNEL_ID` — YouTube channel ID, or a handle beginning with `@`
 - `GEMINI_API_KEY` — set this only if a server-side Gemini feature is enabled
+
+The browser authentication configuration is public and is embedded into the Vite build. Set these exact names in Vercel for every deployment environment, then redeploy:
+
 - `VITE_SUPABASE_URL` — Supabase project URL
 - `VITE_SUPABASE_PUBLISHABLE_KEY` — Supabase publishable key (never the `service_role` key)
 
-Do not prefix secret variables with `VITE_`; Vite-prefixed variables are intended for client-side exposure. Supabase's Google provider client secret belongs only in the Supabase dashboard. The current YouTube endpoints do not use Gemini yet.
+Vite now fails the build with the missing variable name if either required Supabase browser variable is absent. Do not prefix secret variables with `VITE_`; Vite-prefixed variables are intended for client-side exposure. Supabase's Google provider client secret belongs only in the Supabase dashboard. The current YouTube endpoints do not use Gemini yet.
 
 Vercel automatically deploys the functions in `api/youtube/` alongside the Vite output, so no `vercel.json` rewrite is required. Available routes are `GET /api/youtube/channel`, `GET /api/youtube/videos`, `GET /api/youtube/live`, `GET /api/youtube/data`, `GET /api/youtube/status`, and `POST /api/youtube/refresh`.
 

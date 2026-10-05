@@ -12,8 +12,13 @@ export function setRememberSession(remember: boolean): void {
 }
 
 export function createClient() {
-  if (!supabaseUrl || !supabasePublishableKey) {
-    throw new Error('Authentication configuration is missing. Check your Supabase environment variables.');
+  const missingConfig = [
+    !supabaseUrl && 'VITE_SUPABASE_URL',
+    !supabasePublishableKey && 'VITE_SUPABASE_PUBLISHABLE_KEY',
+  ].filter((name): name is string => Boolean(name));
+
+  if (missingConfig.length > 0) {
+    throw new Error(`Authentication configuration is missing: ${missingConfig.join(', ')}.`);
   }
 
   browserClient ??= createBrowserClient(supabaseUrl, supabasePublishableKey, {
