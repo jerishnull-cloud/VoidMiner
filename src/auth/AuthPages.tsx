@@ -184,7 +184,7 @@ function LoginPage() {
         console.log('[AUTH] Email login successful');
         console.log('[AUTH] Redirecting to login-success');
       }
-      navigate('/login-success');
+      navigate('/login-success', { replace: true });
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : 'Unable to sign in. Please try again.');
       setLoading(false);
