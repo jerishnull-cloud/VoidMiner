@@ -5,7 +5,7 @@
   box-sizing: border-box;
   overflow: hidden;
   color: #fff;
-  background: #050507;
+  background: #030108;
 }
 
 .auth-background {
@@ -14,9 +14,9 @@
   z-index: 0;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 34rem 30rem at 50% 48%, rgba(123, 25, 255, 0.1), transparent 74%),
-    radial-gradient(ellipse 72rem 50rem at 50% 50%, rgba(24, 5, 43, 0.52), transparent 80%),
-    linear-gradient(180deg, #05020b 0%, #0b0318 46%, #05020b 100%);
+    radial-gradient(ellipse 34rem 30rem at 50% 48%, rgba(139, 43, 255, 0.1), transparent 74%),
+    radial-gradient(ellipse 72rem 50rem at 50% 50%, rgba(16, 5, 31, 0.72), transparent 80%),
+    linear-gradient(180deg, #030108 0%, #10051F 46%, #030108 100%);
 }
 
 .auth-content {

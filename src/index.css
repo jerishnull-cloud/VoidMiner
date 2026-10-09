@@ -2,11 +2,12 @@
 
 @layer base {
   :root {
-    --bg-deep: #05020B;
-    --bg-dark-purple: #0B0318;
+    --bg-deep: #030108;
+    --bg-dark-purple: #10051F;
     --color-purple: #7B19FF;
-    --color-neon-purple: #A832FF;
-    --color-light-purple: #D9B3FF;
+    --color-neon-purple: #8B2BFF;
+    --color-electric-violet: #B026FF;
+    --color-light-purple: #D5B3FF;
     --color-white: #FFFFFF;
   }
 
@@ -39,39 +40,183 @@
   pointer-events: none;
   z-index: 0;
   overflow: hidden;
-  background:
-    radial-gradient(ellipse 36rem 28rem at 50% 68%, rgba(123, 25, 255, 0.12), transparent 72%),
-    radial-gradient(ellipse 70rem 48rem at 50% 56%, rgba(24, 5, 43, 0.55), transparent 78%),
-    linear-gradient(180deg, #05020B 0%, #0B0318 46%, #080311 72%, #05020B 100%);
+  background-color: #030108;
 }
 
-.void-miner-background::before,
-.void-miner-background::after {
-  content: '';
+/* Layer 1: Deep cosmic base */
+.space-cosmic-base {
   position: absolute;
-  inset: -12%;
+  inset: 0;
   pointer-events: none;
+  background:
+    radial-gradient(ellipse 75% 65% at 50% 25%, #10051F 0%, #030108 80%),
+    linear-gradient(180deg, #030108 0%, #10051F 45%, #070213 75%, #030108 100%);
 }
 
-.void-miner-background::before {
+/* Layer 2: Volumetric drifting purple nebula clouds */
+.space-nebula {
+  position: absolute;
+  pointer-events: none;
+  border-radius: 9999px;
+  filter: blur(85px);
+  will-change: transform, opacity;
+}
+
+.nebula-cloud-1 {
+  width: min(85rem, 130vw);
+  height: min(52rem, 85vh);
+  top: -15%;
+  left: -15%;
   background:
-    repeating-conic-gradient(
-      from 0deg at 50% 65%,
-      transparent 0deg 14deg,
-      rgba(168, 50, 255, 0.018) 14.25deg 14.8deg,
-      transparent 15deg 29deg
+    radial-gradient(ellipse 65% 55% at 45% 45%, rgba(139, 43, 255, 0.16) 0%, rgba(176, 38, 255, 0.08) 45%, transparent 72%),
+    radial-gradient(ellipse 45% 35% at 65% 35%, rgba(213, 179, 255, 0.07) 0%, transparent 60%);
+  animation: nebulaDrift1 48s ease-in-out infinite alternate;
+}
+
+.nebula-cloud-2 {
+  width: min(90rem, 140vw);
+  height: min(58rem, 90vh);
+  bottom: -20%;
+  right: -20%;
+  background:
+    radial-gradient(ellipse 60% 50% at 55% 55%, rgba(176, 38, 255, 0.14) 0%, rgba(139, 43, 255, 0.06) 50%, transparent 75%),
+    radial-gradient(ellipse 50% 40% at 30% 60%, rgba(123, 25, 255, 0.1) 0%, transparent 65%);
+  animation: nebulaDrift2 62s ease-in-out infinite alternate;
+}
+
+.nebula-cloud-3 {
+  width: min(65rem, 100vw);
+  height: min(42rem, 70vh);
+  top: 35%;
+  left: 20%;
+  background:
+    radial-gradient(ellipse 50% 50% at 50% 50%, rgba(139, 43, 255, 0.09) 0%, rgba(16, 5, 31, 0.5) 60%, transparent 80%);
+  animation: nebulaDrift3 56s ease-in-out infinite alternate;
+}
+
+.nebula-cloud-4 {
+  width: min(50rem, 80vw);
+  height: min(35rem, 55vh);
+  top: 15%;
+  right: 5%;
+  background:
+    radial-gradient(ellipse 55% 45% at 50% 50%, rgba(213, 179, 255, 0.06) 0%, rgba(176, 38, 255, 0.05) 45%, transparent 70%);
+  animation: nebulaDrift1 38s ease-in-out infinite alternate-reverse;
+}
+
+/* Layer 3: Subtle cosmic energy waves */
+.space-energy-waves {
+  position: absolute;
+  inset: -20%;
+  pointer-events: none;
+  opacity: 0.35;
+  mix-blend-mode: screen;
+}
+
+.waves-primary {
+  background:
+    radial-gradient(ellipse 90% 40% at 50% 50%, rgba(176, 38, 255, 0.04) 0%, transparent 70%),
+    repeating-linear-gradient(
+      -45deg,
+      transparent 0,
+      transparent 90px,
+      rgba(139, 43, 255, 0.015) 92px,
+      transparent 94px
     );
-  -webkit-mask-image: radial-gradient(ellipse 55% 62% at 50% 65%, #000 0%, transparent 100%);
-  mask-image: radial-gradient(ellipse 55% 62% at 50% 65%, #000 0%, transparent 100%);
-  animation: energyRays 100s ease-in-out infinite alternate;
+  animation: energyWaveFlow1 45s linear infinite;
 }
 
-.void-miner-background::after {
+.waves-secondary {
   background:
-    radial-gradient(ellipse 30rem 18rem at 50% 68%, rgba(168, 50, 255, 0.08), transparent 72%),
-    radial-gradient(ellipse 42rem 24rem at 50% 68%, rgba(123, 25, 255, 0.045), transparent 76%);
-  filter: blur(28px);
-  animation: nebulaPulse 24s ease-in-out infinite alternate;
+    radial-gradient(ellipse 70% 55% at 50% 45%, rgba(139, 43, 255, 0.035) 0%, transparent 68%),
+    repeating-linear-gradient(
+      35deg,
+      transparent 0,
+      transparent 110px,
+      rgba(213, 179, 255, 0.012) 112px,
+      transparent 114px
+    );
+  animation: energyWaveFlow2 60s linear infinite;
+}
+
+/* Layer 4: Central atmospheric purple glow behind hero section */
+.space-hero-atmosphere {
+  position: absolute;
+  width: min(65rem, 115vw);
+  height: min(42rem, 75vh);
+  top: 12%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 9999px;
+  background: radial-gradient(
+    ellipse at 50% 45%,
+    rgba(176, 38, 255, 0.16) 0%,
+    rgba(139, 43, 255, 0.09) 35%,
+    rgba(16, 5, 31, 0.35) 60%,
+    transparent 78%
+  );
+  filter: blur(80px);
+  pointer-events: none;
+  animation: heroAtmospherePulse 16s ease-in-out infinite alternate;
+}
+
+/* Layer 5: Canvas particle system */
+.space-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  display: block;
+}
+
+/* Layer 6: Deep cosmic vignette for infinite depth */
+.space-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 85% 80% at 50% 50%,
+    transparent 50%,
+    rgba(3, 1, 8, 0.45) 80%,
+    rgba(3, 1, 8, 0.85) 100%
+  );
+}
+
+@keyframes nebulaDrift1 {
+  0% { transform: translate3d(0, 0, 0) scale(1) rotate(0deg); opacity: 0.75; }
+  50% { transform: translate3d(4%, 3%, 0) scale(1.08) rotate(3deg); opacity: 0.95; }
+  100% { transform: translate3d(-3%, 2%, 0) scale(0.96) rotate(-2deg); opacity: 0.8; }
+}
+
+@keyframes nebulaDrift2 {
+  0% { transform: translate3d(0, 0, 0) scale(1) rotate(0deg); opacity: 0.8; }
+  50% { transform: translate3d(-5%, -4%, 0) scale(1.1) rotate(-4deg); opacity: 1; }
+  100% { transform: translate3d(3%, -2%, 0) scale(0.95) rotate(2deg); opacity: 0.75; }
+}
+
+@keyframes nebulaDrift3 {
+  0% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.6; }
+  50% { transform: translate3d(2%, -3%, 0) scale(1.12); opacity: 0.85; }
+  100% { transform: translate3d(-3%, 3%, 0) scale(0.92); opacity: 0.65; }
+}
+
+@keyframes energyWaveFlow1 {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(2%, 1%, 0) scale(1.04); }
+  100% { transform: translate3d(4%, 2%, 0) scale(1); }
+}
+
+@keyframes energyWaveFlow2 {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(-2%, 2%, 0) scale(1.03); }
+  100% { transform: translate3d(-4%, 4%, 0) scale(1); }
+}
+
+@keyframes heroAtmospherePulse {
+  0% { transform: translateX(-50%) scale(0.95); opacity: 0.7; }
+  50% { transform: translateX(-50%) scale(1.06); opacity: 0.95; }
+  100% { transform: translateX(-50%) scale(1); opacity: 0.8; }
 }
 
 .void-miner-base {
@@ -719,7 +864,10 @@
   .void-miner-fog,
   .void-miner-glow,
   .floating-cube,
-  .bg-particle {
+  .bg-particle,
+  .space-nebula,
+  .space-energy-waves,
+  .space-hero-atmosphere {
     animation: none;
   }
 

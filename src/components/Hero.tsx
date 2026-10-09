@@ -53,8 +53,13 @@ export const Hero: React.FC<HeroProps> = ({
           )}
         </div>
 
-        {/* Official VOID miner Logo with subtle purple neon glow */}
+        {/* Official VOID miner Logo with subtle purple atmospheric aura behind it */}
         <div className="relative mb-6 group cursor-pointer flex justify-center">
+          {/* Gentle atmospheric purple backdrop glow */}
+          <div
+            className="absolute -inset-6 rounded-full bg-gradient-to-r from-[#8B2BFF]/20 via-[#B026FF]/25 to-[#D5B3FF]/15 blur-2xl pointer-events-none transform -translate-y-1 transition-all duration-700 group-hover:scale-110 group-hover:opacity-100 opacity-80"
+            aria-hidden="true"
+          />
           <div className="relative flex items-center justify-center">
             <Logo variant="hero" />
           </div>

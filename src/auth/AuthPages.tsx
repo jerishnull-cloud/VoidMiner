@@ -11,6 +11,7 @@ import {
   UserRound,
 } from 'lucide-react';
 import { Logo } from '../components/Logo';
+import { SpaceBackground } from '../components/SpaceBackground';
 import {
   AuthUser,
   createAccount,
@@ -29,31 +30,6 @@ type FieldErrors = Partial<Record<FieldName, string>>;
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-function AuthBackground() {
-  return (
-    <div className="void-miner-background auth-background" aria-hidden="true">
-      <div className="void-miner-base" />
-      <div className="void-miner-glow glow-left" />
-      <div className="void-miner-glow glow-right" />
-      <div className="void-miner-glow glow-center" />
-      <div className="void-miner-fog fog-one" />
-      <div className="void-miner-fog fog-two" />
-      <div className="void-miner-grid" />
-      <div className="minecraft-silhouette terrain-back terrain-left" />
-      <div className="minecraft-silhouette terrain-back terrain-right" />
-      <div className="minecraft-silhouette trees trees-left" />
-      <div className="minecraft-silhouette trees trees-right" />
-      <div className="floating-cube cube-one" />
-      <div className="floating-cube cube-two" />
-      <div className="floating-cube cube-three" />
-      <div className="floating-cube cube-four" />
-      {Array.from({ length: 8 }, (_, index) => (
-        <div key={index} className={`bg-particle particle-${index + 1}`} />
-      ))}
-    </div>
-  );
-}
-
 function GoogleMark() {
   return (
     <svg aria-hidden="true" viewBox="0 0 48 48" className="auth-google-mark">
@@ -68,7 +44,7 @@ function GoogleMark() {
 function AuthShell({ children }: { children: React.ReactNode }) {
   return (
     <main className="auth-page">
-      <AuthBackground />
+      <SpaceBackground />
       <div className="auth-content">{children}</div>
       <div className="auth-footer">VOID MINER <span>•</span> ENTER THE UNKNOWN</div>
     </main>
